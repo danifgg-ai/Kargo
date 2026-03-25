@@ -1,0 +1,272 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  client
+  admin
+  super_admin
+}
+
+enum RentalStatus {
+  pending_payment
+  confirmed
+  active
+  completed
+  cancelled
+}
+
+enum PaymentStatus {
+  pending
+  processing
+  approved
+  rejected
+  refunded
+}
+
+enum InvoiceStatus {
+  draft
+  sent_to_set
+  approved
+  rejected
+  cancelled
+}
+
+enum MachineryStatus {
+  available
+  rented
+  maintenance
+  inactive
+}
+
+enum BlockType {
+  maintenance
+  repair
+  reserved
+  other
+}
+
+model UserProfile {
+  id          String   @id @db.Uuid
+  email       String   @unique
+  fullName    String   @map("full_name")
+  company     String?
+  ruc         String?
+  phone       String?
+  avatarUrl   String?  @map("avatar_url")
+  role        UserRole @default(client)
+  address     String?
+  city        String?  @default("Asunción")
+  billingName String?  @map("billing_name")
+  billingRuc  String?  @map("billing_ruc")
+  billingAddress String? @map("billing_address")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  rentals       Rental[]
+  notifications Notification[]
+
+  @@map("user_profiles")
+}
+
+model MachineryCategory {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  iconUrl     String?  @map("icon_url")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  machinery Machinery[]
+
+  @@map("machinery_categories")
+}
+
+model Machinery {
+  id              String          @id @default(uuid()) @db.Uuid
+  categoryId      String          @map("category_id") @db.Uuid
+  name            String
+  slug            String          @unique
+  brand           String
+  model           String
+  year            Int?
+  serialNumber    String?         @unique @map("serial_number")
+  description     String?
+  specifications  Json?
+  images          String[]        @default([])
+  pricePerHour    Int             @map("price_per_hour")
+  pricePerDay     Int             @map("price_per_day")
+  pricePerWeek    Int             @map("price_per_week")
+  pricePerMonth   Int             @map("price_per_month")
+  depositAmount   Int             @default(0) @map("deposit_amount")
+  status          MachineryStatus @default(available)
+  isFeatured      Boolean         @default(false) @map("is_featured")
+  horsePower      Int?            @map("horse_power")
+  weightKg        Int?            @map("weight_kg")
+  fuelType        String?         @map("fuel_type")
+  loadCapacityKg  Int?            @map("load_capacity_kg")
+  maxSpeedKmh     Float?          @map("max_speed_kmh")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  category          MachineryCategory    @relation(fields: [categoryId], references: [id])
+  availabilityBlocks AvailabilityBlock[]
+  rentals           Rental[]
+  telemetry         MachineryTelemetry[]
+
+  @@map("machinery")
+}
+
+model AvailabilityBlock {
+  id          String    @id @default(uuid()) @db.Uuid
+  machineryId String    @map("machinery_id") @db.Uuid
+  startDate   DateTime  @map("start_date")
+  endDate     DateTime  @map("end_date")
+  blockType   BlockType @map("block_type")
+  reason      String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  machinery Machinery @relation(fields: [machineryId], references: [id])
+
+  @@map("availability_blocks")
+}
+
+model Rental {
+  id              String       @id @default(uuid()) @db.Uuid
+  rentalNumber    String       @unique @map("rental_number")
+  userId          String       @map("user_id") @db.Uuid
+  machineryId     String       @map("machinery_id") @db.Uuid
+  status          RentalStatus @default(pending_payment)
+  startDate       DateTime     @map("start_date")
+  endDate         DateTime     @map("end_date")
+  rateType        String       @map("rate_type") // hour, day, week, month
+  rateAmount      Int          @map("rate_amount")
+  subtotal        Int
+  ivaAmount       Int          @map("iva_amount")
+  depositAmount   Int          @default(0) @map("deposit_amount")
+  totalAmount     Int          @map("total_amount")
+  deliveryType    String?      @map("delivery_type") // pickup, delivery
+  deliveryAddress String?      @map("delivery_address")
+  deliveryNotes   String?      @map("delivery_notes")
+  notes           String?
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  user      UserProfile @relation(fields: [userId], references: [id])
+  machinery Machinery   @relation(fields: [machineryId], references: [id])
+  payments  Payment[]
+  invoices  Invoice[]
+  dailyReports RentalDailyReport[]
+
+  @@map("rentals")
+}
+
+model Payment {
+  id              String        @id @default(uuid()) @db.Uuid
+  rentalId        String        @map("rental_id") @db.Uuid
+  shopProcessId   String        @unique @map("shop_process_id")
+  bancardProcessId String?      @map("bancard_process_id")
+  amount          Int
+  currency        String        @default("PYG")
+  status          PaymentStatus @default(pending)
+  bancardResponse Json?         @map("bancard_response")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  rental Rental @relation(fields: [rentalId], references: [id])
+
+  @@map("payments")
+}
+
+model Invoice {
+  id            String        @id @default(uuid()) @db.Uuid
+  rentalId      String        @map("rental_id") @db.Uuid
+  invoiceNumber String        @unique @map("invoice_number")
+  cdc           String?       @db.VarChar(44)
+  xmlContent    String?       @map("xml_content")
+  qrCode        String?       @map("qr_code")
+  pdfUrl        String?       @map("pdf_url")
+  status        InvoiceStatus @default(draft)
+  emitterRuc    String        @map("emitter_ruc")
+  emitterName   String        @map("emitter_name")
+  receiverRuc   String        @map("receiver_ruc")
+  receiverName  String        @map("receiver_name")
+  subtotal      Int
+  ivaAmount     Int           @map("iva_amount")
+  totalAmount   Int           @map("total_amount")
+  timbrado      String
+  createdAt     DateTime      @default(now()) @map("created_at")
+
+  rental Rental @relation(fields: [rentalId], references: [id])
+
+  @@map("invoices")
+}
+
+model MachineryTelemetry {
+  id          String   @id @default(uuid()) @db.Uuid
+  machineryId String   @map("machinery_id") @db.Uuid
+  rentalId    String?  @map("rental_id") @db.Uuid
+  latitude    Float
+  longitude   Float
+  engineOn    Boolean  @default(false) @map("engine_on")
+  engineHours Float    @default(0) @map("engine_hours")
+  fuelLevel   Float    @default(100) @map("fuel_level")
+  speedKmh    Float    @default(0) @map("speed_kmh")
+  fuelConsumptionLiters Float @default(0) @map("fuel_consumption_liters")
+  timestamp   DateTime @default(now())
+
+  machinery Machinery @relation(fields: [machineryId], references: [id])
+
+  @@index([machineryId, timestamp])
+  @@map("machinery_telemetry")
+}
+
+model RentalDailyReport {
+  id              String   @id @default(uuid()) @db.Uuid
+  rentalId        String   @map("rental_id") @db.Uuid
+  date            DateTime @db.Date
+  engineHours     Float    @default(0) @map("engine_hours")
+  fuelConsumed    Float    @default(0) @map("fuel_consumed")
+  distanceKm      Float    @default(0) @map("distance_km")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  rental Rental @relation(fields: [rentalId], references: [id])
+
+  @@unique([rentalId, date])
+  @@map("rental_daily_reports")
+}
+
+model Notification {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  title     String
+  message   String
+  type      String   @default("info") // info, success, warning, error
+  isRead    Boolean  @default(false) @map("is_read")
+  link      String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user UserProfile @relation(fields: [userId], references: [id])
+
+  @@map("notifications")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String?  @map("user_id") @db.Uuid
+  action    String
+  entity    String
+  entityId  String?  @map("entity_id") @db.Uuid
+  details   Json?
+  ipAddress String?  @map("ip_address")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("audit_log")
+}
