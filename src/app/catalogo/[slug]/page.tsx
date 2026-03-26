@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import Navbar from '@/components/layout/Navbar'
@@ -12,11 +12,14 @@ import AvailabilityCalendar from '@/components/machinery/AvailabilityCalendar'
 import PriceCalculator from '@/components/rental/PriceCalculator'
 import StatusBadge from '@/components/ui/StatusBadge'
 import { demoMachines, demoBlockedDates, demoMaintenanceDates } from '@/lib/data/machines'
-import { formatGuaranies } from '@/lib/utils/currency'
+import { formatGuaranies, calculateIVA } from '@/lib/utils/currency'
+import { useRentalStore } from '@/stores/useRentalStore'
 
 export default function MachineDetailPage() {
   const params = useParams()
+  const router = useRouter()
   const slug = params.slug as string
+  const { setDraft } = useRentalStore()
 
   const machine = useMemo(() => demoMachines.find((m) => m.slug === slug), [slug])
 
@@ -168,16 +171,51 @@ export default function MachineDetailPage() {
               />
 
               {/* Reserve button */}
-              <Link
-                href={machine.status === 'available' ? '/auth/registro' : '#'}
+              <button
+                onClick={() => {
+                  if (machine.status !== 'available' || !selectedStart || !selectedEnd) return
+                  const rateAmount = rateAmounts[rateType]
+                  const start = new Date(selectedStart)
+                  const end = new Date(selectedEnd)
+                  const diffMs = end.getTime() - start.getTime()
+                  const diffDays = Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60 * 24)))
+                  let quantity: number
+                  switch (rateType) {
+                    case 'hour': quantity = diffDays * 8; break
+                    case 'week': quantity = Math.max(1, Math.ceil(diffDays / 7)); break
+                    case 'month': quantity = Math.max(1, Math.ceil(diffDays / 30)); break
+                    default: quantity = diffDays
+                  }
+                  const subtotal = quantity * rateAmount
+                  const { iva, total } = calculateIVA(subtotal)
+                  setDraft({
+                    machineryId: machine.id,
+                    machineryName: machine.name,
+                    machineryImage: machine.images[0] || null,
+                    startDate: selectedStart,
+                    endDate: selectedEnd,
+                    rateType,
+                    rateAmount,
+                    subtotal,
+                    iva,
+                    deposit: machine.deposit_amount,
+                    total,
+                  })
+                  router.push('/checkout')
+                }}
+                disabled={machine.status !== 'available' || !selectedStart || !selectedEnd}
                 className={`block w-full py-4 text-center font-display text-lg uppercase font-bold tracking-wider transition-all ${
-                  machine.status === 'available'
-                    ? 'bg-kargo-yellow text-kargo-black hover:shadow-kargo'
+                  machine.status === 'available' && selectedStart && selectedEnd
+                    ? 'bg-kargo-yellow text-kargo-black hover:shadow-kargo cursor-pointer'
                     : 'bg-kargo-steel text-kargo-muted cursor-not-allowed'
                 }`}
               >
-                {machine.status === 'available' ? 'Reservar ahora' : 'No disponible'}
-              </Link>
+                {machine.status !== 'available'
+                  ? 'No disponible'
+                  : !selectedStart || !selectedEnd
+                    ? 'Seleccioná fechas para reservar'
+                    : 'Reservar ahora'}
+              </button>
             </motion.div>
           </div>
         </div>
