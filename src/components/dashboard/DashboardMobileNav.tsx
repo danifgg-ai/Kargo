@@ -7,6 +7,7 @@ import { clsx } from 'clsx'
 const navItems = [
   { href: '/dashboard', label: 'Resumen', exact: true },
   { href: '/dashboard/reservas', label: 'Reservas' },
+  { href: '/dashboard/telemetria', label: 'Telemetría' },
   { href: '/dashboard/perfil', label: 'Perfil' },
   { href: '/dashboard/notificaciones', label: 'Alertas', badge: 2 },
 ]
