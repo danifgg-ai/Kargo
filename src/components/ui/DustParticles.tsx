@@ -25,7 +25,7 @@ export default function DustParticles() {
 
     let animationId: number
     const particles: Particle[] = []
-    const maxParticles = 80
+    const maxParticles = 40
 
     const resize = () => {
       canvas.width = window.innerWidth

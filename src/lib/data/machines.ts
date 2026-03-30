@@ -44,7 +44,7 @@ export const demoMachines: Machinery[] = [
     description: 'Pala cargadora de alto rendimiento con cabina cerrada ROPS/FOPS, controles joystick y sistema hidráulico de alta presión. Perfecta para construcción general, movimiento de materiales y nivelación.',
     specifications: { engine: 'Cat C2.2', bucket_width: '152cm', hydraulic_flow: '73 L/min' },
     images: [
-      'https://images.unsplash.com/photo-1621922688758-db23b1cec2a4?w=800&q=80',
+      'https://images.unsplash.com/photo-1580901368919-7738efb0f228?w=800&q=80',
       'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&q=80',
     ],
     price_per_hour: 250000,
@@ -75,7 +75,7 @@ export const demoMachines: Machinery[] = [
     specifications: { engine: 'Yanmar 4TNV98C', tracks: 'Rubber', bucket_width: '168cm' },
     images: [
       'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&q=80',
-      'https://images.unsplash.com/photo-1621922688758-db23b1cec2a4?w=800&q=80',
+      'https://images.unsplash.com/photo-1580901368919-7738efb0f228?w=800&q=80',
     ],
     price_per_hour: 280000,
     price_per_day: 2000000,

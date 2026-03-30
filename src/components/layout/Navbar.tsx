@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
+import KargoLogo from '@/components/ui/KargoLogo'
 
 export default function Navbar() {
   const { user, isLoading, signOut } = useAuth()
@@ -12,9 +13,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <span className="font-display text-2xl font-black text-kargo-yellow tracking-tight">
-              KARGO
-            </span>
+            <KargoLogo size="md" />
           </Link>
 
           {/* Nav Links */}

@@ -1,12 +1,14 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import DustParticles from '@/components/ui/DustParticles'
 import AnimatedCounter from '@/components/ui/AnimatedCounter'
 import MachineCard from '@/components/machinery/MachineCard'
+import KargoLogo from '@/components/ui/KargoLogo'
 import type { Machinery } from '@/types/database'
 
 // Featured machines data for demo (will be fetched from Supabase)
@@ -49,7 +51,7 @@ const featuredMachines: Machinery[] = [
     serial_number: 'CAT-226D3-001',
     description: 'Pala cargadora de alto rendimiento con cabina cerrada.',
     specifications: { engine: 'Cat C2.2', bucket_width: '152cm' },
-    images: ['https://images.unsplash.com/photo-1621922688758-db23b1cec2a4?w=800&q=80'],
+    images: ['https://images.unsplash.com/photo-1580901368919-7738efb0f228?w=800&q=80'],
     price_per_hour: 250000,
     price_per_day: 1800000,
     price_per_week: 9500000,
@@ -106,31 +108,19 @@ const steps = [
     number: '01',
     title: 'Elegí',
     description: 'Explorá nuestro catálogo y encontrá la maquinaria perfecta para tu proyecto.',
-    icon: (
-      <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-      </svg>
-    ),
+    image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=75',
   },
   {
     number: '02',
     title: 'Reservá',
     description: 'Seleccioná las fechas, revisá el presupuesto y pagá online con Bancard.',
-    icon: (
-      <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-      </svg>
-    ),
+    image: 'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=600&q=75',
   },
   {
     number: '03',
     title: 'Trabajá',
     description: 'Recibí la maquinaria y monitoreá en tiempo real desde tu dashboard.',
-    icon: (
-      <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17l-5.1-5.1m0 0L3.55 7.3m2.77 2.77L3.55 12.84m2.77-2.77l2.77 2.77M15.17 11.42l5.1 5.1m0 0l2.77 2.77m-2.77-2.77l2.77-2.77m-2.77 2.77l-2.77-2.77" />
-      </svg>
-    ),
+    image: 'https://images.unsplash.com/photo-1580901368919-7738efb0f228?w=600&q=75',
   },
 ]
 
@@ -174,6 +164,9 @@ const differentiators = [
   },
 ]
 
+// Trusted brands
+const trustedBrands = ['Caterpillar', 'Bobcat', 'John Deere', 'Komatsu', 'Volvo', 'CASE']
+
 export default function Home() {
   return (
     <>
@@ -181,19 +174,45 @@ export default function Home() {
 
       <main>
         {/* ─── HERO ─── */}
-        <section className="relative min-h-screen flex flex-col items-center justify-center bg-kargo-black kargo-noise overflow-hidden">
+        <section className="relative min-h-screen flex flex-col items-center justify-center bg-kargo-black overflow-hidden">
+          {/* Background image */}
+          <div className="absolute inset-0 z-0">
+            <Image
+              src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1920&q=75"
+              alt="Construction site"
+              fill
+              className="object-cover opacity-20"
+              priority
+              sizes="100vw"
+            />
+          </div>
+
           <DustParticles />
 
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-kargo-black/50 to-kargo-dark z-[1]" />
+          {/* Gradient overlays */}
+          <div className="absolute inset-0 bg-gradient-to-b from-kargo-black via-transparent to-kargo-dark z-[1]" />
+          <div className="absolute inset-0 bg-gradient-to-r from-kargo-black/80 via-transparent to-kargo-black/80 z-[1]" />
+
+          {/* Diagonal yellow accent */}
+          <div className="absolute bottom-0 left-0 w-full h-2 bg-kargo-yellow z-[2]" />
+          <div className="absolute -bottom-1 right-0 w-1/3 h-24 bg-kargo-yellow/5 skew-x-[-12deg] z-[1]" />
 
           <div className="relative z-10 text-center px-6 max-w-5xl mx-auto">
             <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6 }}
+              className="mb-8"
+            >
+              <KargoLogo size="lg" />
+            </motion.div>
+
+            <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
             >
-              <h1 className="font-display text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-black text-kargo-yellow tracking-tight mb-6 leading-[0.9]">
+              <h1 className="font-display text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-kargo-yellow tracking-tight mb-6 leading-[0.9]">
                 TU FLOTA.<br />
                 <span className="text-kargo-text">CUANDO LA</span><br />
                 <span className="text-kargo-yellow">NECESITÁS.</span>
@@ -203,7 +222,7 @@ export default function Home() {
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
               className="text-kargo-muted text-lg md:text-xl mb-10 max-w-xl mx-auto"
             >
               Alquilá maquinaria de construcción en Asunción con un clic.
@@ -213,7 +232,7 @@ export default function Home() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.5 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
               className="flex flex-col sm:flex-row gap-4 justify-center"
             >
               <Link
@@ -233,7 +252,7 @@ export default function Home() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 1, delay: 0.8 }}
+              transition={{ duration: 1, delay: 0.9 }}
               className="mt-10 inline-flex items-center gap-2 px-5 py-2.5 bg-kargo-surface/50 backdrop-blur-sm border border-kargo-border rounded-full animate-float"
             >
               <span className="w-2.5 h-2.5 rounded-full bg-kargo-green animate-pulse-green" />
@@ -258,19 +277,48 @@ export default function Home() {
           </motion.div>
         </section>
 
+        {/* ─── TRUSTED BRANDS BAR ─── */}
+        <section className="py-8 bg-kargo-black border-b border-kargo-border">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-center gap-8 md:gap-16 flex-wrap">
+              {trustedBrands.map((brand, i) => (
+                <motion.span
+                  key={brand}
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                  className="font-display text-lg md:text-xl font-bold text-kargo-steel/60 uppercase tracking-wider"
+                >
+                  {brand}
+                </motion.span>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* ─── STATS ─── */}
-        <section className="py-20 bg-kargo-dark border-y border-kargo-border">
+        <section className="py-20 bg-kargo-dark border-b border-kargo-border relative overflow-hidden">
+          {/* Background accent */}
+          <div className="absolute top-0 left-0 w-2 h-full bg-kargo-yellow/20" />
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              {stats.map((stat) => (
-                <div key={stat.label} className="text-center">
+              {stats.map((stat, i) => (
+                <motion.div
+                  key={stat.label}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                  className="text-center"
+                >
                   <div className="font-display text-4xl md:text-5xl font-black text-kargo-yellow mb-2">
                     <AnimatedCounter end={stat.value} suffix={stat.suffix} />
                   </div>
                   <p className="text-sm text-kargo-muted uppercase tracking-wider">
                     {stat.label}
                   </p>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
@@ -335,7 +383,7 @@ export default function Home() {
               </h2>
             </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-6">
               {steps.map((step, i) => (
                 <motion.div
                   key={step.number}
@@ -343,24 +391,27 @@ export default function Home() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.2 }}
-                  className="relative text-center group"
+                  className="relative group"
                 >
-                  {/* Connector line */}
-                  {i < steps.length - 1 && (
-                    <div className="hidden md:block absolute top-12 left-[60%] w-[80%] h-px bg-kargo-border" />
-                  )}
-
-                  <div className="inline-flex items-center justify-center w-24 h-24 bg-kargo-surface border border-kargo-border mb-6 text-kargo-yellow group-hover:border-kargo-yellow group-hover:shadow-kargo-sm transition-all duration-500">
-                    {step.icon}
+                  {/* Step image */}
+                  <div className="relative h-48 mb-6 overflow-hidden bg-kargo-surface border border-kargo-border group-hover:border-kargo-yellow/50 transition-colors">
+                    <Image
+                      src={step.image}
+                      alt={step.title}
+                      fill
+                      className="object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-700"
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-kargo-black via-transparent to-transparent" />
+                    <div className="absolute top-3 left-3 w-10 h-10 bg-kargo-yellow flex items-center justify-center">
+                      <span className="font-display text-sm font-black text-kargo-black">{step.number}</span>
+                    </div>
                   </div>
 
-                  <div className="font-display text-xs text-kargo-steel tracking-[0.3em] mb-2">
-                    PASO {step.number}
-                  </div>
                   <h3 className="font-display text-2xl font-bold text-kargo-text uppercase mb-3">
                     {step.title}
                   </h3>
-                  <p className="text-kargo-muted text-sm leading-relaxed max-w-xs mx-auto">
+                  <p className="text-kargo-muted text-sm leading-relaxed">
                     {step.description}
                   </p>
                 </motion.div>
@@ -415,6 +466,17 @@ export default function Home() {
         <section className="py-24 bg-kargo-black kargo-noise relative overflow-hidden">
           {/* Yellow accent glow */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-kargo-yellow/5 rounded-full blur-[120px] pointer-events-none" />
+
+          {/* Background CTA image */}
+          <div className="absolute inset-0 z-0">
+            <Image
+              src="https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=1200&q=60"
+              alt=""
+              fill
+              className="object-cover opacity-10"
+              sizes="100vw"
+            />
+          </div>
 
           <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <motion.div
